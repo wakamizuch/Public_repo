@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>タイマーアプリ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- <script src="/send_url.js"></script> -->
+</head>
+<body>
+    <header> <a href="/" class="header-logo">ポモドーロテクニックのためのタイマーアプリ</a> </header>
+    <div class="container">
+        <div class="container-header">
+            <h1>作業時間と休憩時間のサイクルタイマー</h1>
+        </div>
+        <div class="timer_container">
+            <div class="timer"> <!-- タイマーの表示部分 -->
+                <h2>作業時間の設定</h2>
+                <div id="timer" class="timer_display">
+                    <%= item.work_time %>:00
+                </div> <!-- ボタンコントロール部分 -->
+                <div id="controls">
+                    <div class="box"> <button id="min"
+                            class="new-button">1分追加</button> <button id="sec"
+                            class="new-button">1秒追加</button> </div>
+                    <div class="box"> <button id="reset"
+                            class="new-button">リセット</button><button id="start"
+                            class="new-button-start">サイクルスタート</button> </div>
+                </div>
+            </div>
+            <div class="timer"> <!-- タイマーの表示部分 -->
+                <h2>休憩時間の設定</h2>
+                <div id="break_timer" class="timer_display">
+                    <%= item.break_time %>:00
+                </div> <!-- ボタンコントロール部分 -->
+                <div id="break_controls">
+                    <div class="box"> <button id="break_min"
+                            class="new-button">1分追加</button><button
+                            id="break_sec" class="new-button">1秒追加</button>
+                    </div>
+                    <div class="box"> <button id="break_reset"
+                            class="new-button">リセット</button> </div>
+                </div>
+            </div> </span><a href="/" class="cancel-button"> </span>もどる</a>
+        </div>
+        <div class="check"> 作業時間,休憩時間の初期値: <span class="time-column"
+                id="work_timer_preserve">
+                <%= item.work_time %>
+            </span>分, <span class="time-column" id="break_timer_preserve">
+                <%= item.break_time %>
+            </span>分 </div> <audio src="/sound/sound_timer.mp3"
+            id="sound"></audio>
+    </div>
+    <script>
+        (function() {
+            const WORK_TIME = 1;
+            const BREAK_TIME = 0;
+            var timer = document.getElementById("timer");
+            var min = document.getElementById("min");
+            var sec = document.getElementById("sec");
+            var reset = document.getElementById("reset");
+            var start = document.getElementById("start");
+            var break_timer = document.getElementById("break_timer");
+            var break_min = document.getElementById("break_min");
+            var break_sec = document.getElementById("break_sec");
+            var break_reset = document.getElementById("break_reset");
+            var break_start = document.getElementById("break_start");
+            var music = document.getElementById("sound");
+            var startTime;
+            var timeLeft;
+            var timeToCountDown = document.getElementById(
+                "work_timer_preserve").textContent;
+            timeToCountDown = Number(timeToCountDown) * 60000;
+            var break_timeToCountDown = document.getElementById(
+                "break_timer_preserve").textContent;
+            break_timeToCountDown = Number(break_timeToCountDown) * 60000;
+            var timerId;
+            var isRunning = false;
+            function updateTimer(t, now) {
+                var d = new Date(t);
+                var m = d.getMinutes();
+                var s = d.getSeconds();
+                m = ("0" + m).slice(-2);
+                s = ("0" + s).slice(-2);
+                if (now == WORK_TIME) {
+                    timer.textContent = m + ":" + s;
+                    var title = (timer.textContent = m + ":" + s);
+                    document.title = title;
+                } else {
+                    break_timer.textContent = m + ":" + s;
+                    var title = (break_timer.textContent = m + ":" + s);
+                    document.title = title;
+                }
+            }
+            function countDown(now) {
+                if (now == WORK_TIME) {
+                    timerId = setTimeout(function() {
+                        timeLeft = timeToCountDown - (Date.now() -
+                            startTime);
+                        if (timeLeft < 0) {
+                            clearTimeout(timerId);
+                            timeLeft = 0;
+                            startTime = Date.now();
+                            updateTimer(timeToCountDown, WORK_TIME);
+                            countDown(BREAK_TIME);
+                            music.play();
+                            return;
+                        }
+                        updateTimer(timeLeft, WORK_TIME);
+                        countDown(WORK_TIME);
+                    }, 300);
+                } else {
+                    timerId = setTimeout(function() {
+                        timeLeft = break_timeToCountDown - (Date
+                            .now() - startTime);
+                        if (timeLeft < 0) {
+                            clearTimeout(timerId);
+                            timeLeft = 0;
+                            startTime = Date.now();
+                            updateTimer(break_timeToCountDown,
+                                BREAK_TIME);
+                            countDown(WORK_TIME);
+                            music.play();
+                            return;
+                        }
+                        updateTimer(timeLeft, BREAK_TIME);
+                        countDown(BREAK_TIME);
+                    }, 300);
+                }
+            }
+            start.addEventListener("click", function() {
+                if (isRunning === false) {
+                    isRunning = true;
+                    start.textContent = "サイクルストップ";
+                    startTime = Date.now();
+                    countDown(WORK_TIME);
+                } else {
+                    isRunning = false;
+                    start.textContent = "サイクルスタート";
+                    timeToCountDown = timeLeft;
+                    clearTimeout(timerId);
+                }
+            });
+            min.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                timeToCountDown += 60 * 1000;
+                if (timeToCountDown >= 60 * 60 * 1000) {
+                    timeToCountDown = 0;
+                }
+                updateTimer(timeToCountDown, WORK_TIME);
+            });
+            sec.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                timeToCountDown += 1000;
+                if (timeToCountDown >= 60 * 60 * 1000) {
+                    timeToCountDown = 0;
+                }
+                updateTimer(timeToCountDown, WORK_TIME);
+            });
+            reset.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                timeToCountDown = 0;
+                updateTimer(timeToCountDown, WORK_TIME);
+            });
+            break_min.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                break_timeToCountDown += 60 * 1000;
+                if (break_timeToCountDown >= 60 * 60 * 1000) {
+                    break_timeToCountDown = 0;
+                }
+                updateTimer(break_timeToCountDown, BREAK_TIME);
+            });
+            break_sec.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                break_timeToCountDown += 1000;
+                if (break_timeToCountDown >= 60 * 60 * 1000) {
+                    break_timeToCountDown = 0;
+                }
+                updateTimer(break_timeToCountDown, BREAK_TIME);
+            });
+            break_reset.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                break_timeToCountDown = 0;
+                updateTimer(break_timeToCountDown, BREAK_TIME);
+            });
+        })();
+    </script>
+</body>
+</html>

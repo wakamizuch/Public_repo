@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>タイマーアプリ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/send_url.js"></script>
+</head>
+<body>
+    <header> <a href="/" class="header-logo">ポモドーロテクニックのためのタイマーアプリ</a> </header>
+    <div class="container">
+        <div class="container-header">
+            <h1>タイマー作成</h1>
+        </div>
+        <div class="item-form-wrapper">
+            <form action="/create" method="post">
+                <p class="form-label">作業時間 (分は省略)</p>
+                <input type="text" class="textbox_int" placeholder="25 (分)"
+                    inputmode="numeric" pattern="\d*" name="work_time">
+                <p class="form-label">休憩時間 (分は省略)</p>
+                <!-- <input type="text" class="textbox_int" placeholder="テキストボックスの例"/> -->
+                <input type="text" class="textbox_int" placeholder="5 (分)"
+                    inputmode="numeric" pattern="\d*" name="break_time">
+                <input type="submit" value="作成する">
+            </form>
+        </div>
+        <a href="/" class="cancel-button">
+            </span>もどる</a>
+    </div>
+</body>
+</html>

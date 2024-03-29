@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ポモドーロテクニックのためのタイマーアプリ</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- <script src="/send_url.js"></script> -->
+</head>
+<body>
+    <header> <a href="/" class="header-logo">ポモドーロテクニックのためのタイマーアプリ</a> </header>
+    <div class="container">
+        <div class="introduction">
+            <h1>ポモドーロテクニックとは</h1>
+            <ul>
+                <li>・集中力を保ち続けるために、作業時間と休憩時間を交互に繰り返すという時間管理術です!</li>
+                <li>・自分好みに作業時間と休憩時間をカスタマイズしてみましょう!</li>
+            </ul>
+        </div>
+        <div class="container-header">
+            <h1>タイマーリスト</h1> <a href="/new" class="new-button">+ タイマーの新規登録</a>
+        </div>
+        <div class="index-table-wrapper">
+            <div class="table-head"> <span class="id-column">ID</span> <span
+                    class="time-column">作業時間</span> <span
+                    class="time-column">休憩時間</span> </div>
+            <ul class="table-body">
+                <% items.forEach((item) => { %>
+                <li>
+                    <div class="item-data"> <span class="id-column">
+                            <%= item.id %>
+                        </span> <span class="time-column">
+                            <%= item.work_time %>分
+                        </span> <span class="time-column">
+                            <%= item.break_time %>分
+                        </span> </div>
+                    <div class="item-menu">
+                        <form action="/delete/<%= item.id %>"
+                            method="post"> <input type="submit" value="削除">
+                        </form><a
+                            href="/choose/<%= item.id %>">選択</a>
+                    </div>
+                </li>
+                <% }) %>
+            </ul>
+        </div>
+    </div>
+    <script>
+        (function() {
+            var timer = document.getElementById("timer");
+            var min = document.getElementById("min");
+            var sec = document.getElementById("sec");
+            var reset = document.getElementById("reset");
+            var start = document.getElementById("start");
+            var startTime;
+            var timeLeft;
+            var timeToCountDown = 0;
+            var timerId;
+            var isRunning = false;
+            function updateTimer(t) {
+                var d = new Date(t);
+                var m = d.getMinutes();
+                var s = d.getSeconds();
+                m = ("0" + m).slice(-2);
+                s = ("0" + s).slice(-2);
+                timer.textContent = m + ":" + s;
+                var title = (timer.textContent = m + ":" + s);
+                document.title = title;
+            }
+            function countDown() {
+                timerId = setTimeout(function() {
+                    timeLeft = timeToCountDown - (Date.now() -
+                        startTime);
+                    if (timeLeft < 0) {
+                        isRunning = false;
+                        start.textContent = "スタート";
+                        clearTimeout(timerId);
+                        timeLeft = 0;
+                        timeToCountDown = 0;
+                        updateTimer(timeLeft);
+                        return;
+                    }
+                    updateTimer(timeLeft);
+                    countDown();
+                }, 100);
+            }
+            start.addEventListener("click", function() {
+                if (isRunning === false) {
+                    isRunning = true;
+                    start.textContent = "ストップ";
+                    startTime = Date.now();
+                    countDown();
+                } else {
+                    isRunning = false;
+                    start.textContent = "スタート";
+                    timeToCountDown = timeLeft;
+                    clearTimeout(timerId);
+                }
+            });
+            min.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                timeToCountDown += 60 * 1000;
+                if (timeToCountDown >= 60 * 60 * 1000) {
+                    timeToCountDown = 0;
+                }
+                updateTimer(timeToCountDown);
+            });
+            sec.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                timeToCountDown += 1000;
+                if (timeToCountDown >= 60 * 60 * 1000) {
+                    timeToCountDown = 0;
+                }
+                updateTimer(timeToCountDown);
+            });
+            reset.addEventListener("click", function() {
+                if (isRunning === true) {
+                    return;
+                }
+                timeToCountDown = 0;
+                updateTimer(timeToCountDown);
+            });
+        })();
+    </script>
+</body>
+</html>
